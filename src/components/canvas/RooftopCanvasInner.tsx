@@ -1,9 +1,13 @@
 'use client';
 
-import React, { useEffect, useSyncExternalStore } from 'react';
+import React, { useEffect, useSyncExternalStore, createContext, useContext } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import type { RooftopCanvasInnerProps } from '@/types/scene';
+import { Scene1Hero } from './Scene1Hero';
+
+export const SceneThemeContext = createContext<'sakura' | 'rain' | 'dawn'>('sakura');
+export const useSceneTheme = () => useContext(SceneThemeContext);
 
 function DefaultCameraRig() {
   const { camera } = useThree();
@@ -15,7 +19,10 @@ function DefaultCameraRig() {
 
 const emptySubscribe = () => () => {};
 
-export function RooftopCanvasInner({ children }: RooftopCanvasInnerProps) {
+export function RooftopCanvasInner({
+  theme = 'sakura',
+  children,
+}: RooftopCanvasInnerProps) {
   // Defensive client-mount guard for Next.js SSR / hydration safety
   const isClient = useSyncExternalStore(
     emptySubscribe,
@@ -54,8 +61,10 @@ export function RooftopCanvasInner({ children }: RooftopCanvasInnerProps) {
         pointerEvents: 'none',
       }}
     >
-      <DefaultCameraRig />
-      {children}
+      <SceneThemeContext.Provider value={theme}>
+        <DefaultCameraRig />
+        {children || <Scene1Hero theme={theme} />}
+      </SceneThemeContext.Provider>
     </Canvas>
   );
 }

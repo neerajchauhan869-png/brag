@@ -27,7 +27,11 @@ const RooftopCanvasInner = dynamic(
   }
 );
 
-export function RooftopCanvas({ className, children }: RooftopCanvasProps) {
+export function RooftopCanvas({
+  className,
+  theme = 'sakura',
+  children,
+}: RooftopCanvasProps) {
   return (
     <div
       className={
@@ -35,7 +39,7 @@ export function RooftopCanvas({ className, children }: RooftopCanvasProps) {
         'fixed inset-0 w-full h-full -z-0 pointer-events-none overflow-hidden select-none'
       }
     >
-      <RooftopCanvasInner>{children}</RooftopCanvasInner>
+      <RooftopCanvasInner theme={theme}>{children}</RooftopCanvasInner>
     </div>
   );
 }

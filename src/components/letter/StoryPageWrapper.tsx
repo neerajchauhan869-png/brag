@@ -4,11 +4,12 @@ import React, { useSyncExternalStore, useMemo } from 'react';
 import Link from 'next/link';
 import { LetterExperience } from './LetterExperience';
 import { LOCAL_STORAGE_KEY } from '@/lib/supabase';
-import type { Story } from '@/types/story';
+import type { Story, StoryTheme } from '@/types/story';
 
 export interface StoryPageWrapperProps {
   slug: string;
   initialStory: Story | null;
+  queryTheme?: 'sakura' | 'rain' | 'dawn';
 }
 
 function subscribeStorage(callback: () => void) {
@@ -16,7 +17,11 @@ function subscribeStorage(callback: () => void) {
   return () => window.removeEventListener('storage', callback);
 }
 
-export function StoryPageWrapper({ slug, initialStory }: StoryPageWrapperProps) {
+export function StoryPageWrapper({
+  slug,
+  initialStory,
+  queryTheme,
+}: StoryPageWrapperProps) {
   // Use React 19 useSyncExternalStore to reactively read from localStorage without cascading renders
   const localStoriesRaw = useSyncExternalStore(
     subscribeStorage,
@@ -68,7 +73,11 @@ export function StoryPageWrapper({ slug, initialStory }: StoryPageWrapperProps) 
     );
   }
 
-  return <LetterExperience story={story} />;
+  // Active theme resolution: explicit query param overrides story.theme for previewing; defaults to story.theme
+  const activeTheme: StoryTheme = queryTheme || story.theme || 'sakura';
+  const effectiveStory = activeTheme !== story.theme ? { ...story, theme: activeTheme } : story;
+
+  return <LetterExperience story={effectiveStory} theme={activeTheme} />;
 }
 
 export default StoryPageWrapper;

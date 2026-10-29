@@ -10,6 +10,8 @@ export interface UseWebAudioReturn {
   pause: () => Promise<void>;
   volume: number;
   setVolume: (vol: number) => void;
+  theme: 'sakura' | 'rain' | 'dawn';
+  setTheme: (theme: 'sakura' | 'rain' | 'dawn') => void;
 }
 
 // Pentatonic & Insen harmonic scale intervals for ambient Japanese anime chimes
@@ -25,23 +27,63 @@ const CHIME_FREQUENCIES = [
   880.00, // A5
 ];
 
-export function useWebAudio(): UseWebAudioReturn {
+export function useWebAudio(
+  initialTheme: 'sakura' | 'rain' | 'dawn' = 'sakura'
+): UseWebAudioReturn {
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [isReady, setIsReady] = useState<boolean>(false);
   const [volume, setVolumeState] = useState<number>(0.35);
+  const [themeOverride, setThemeOverride] = useState<'sakura' | 'rain' | 'dawn' | null>(null);
+
+  // Derived theme compliant with React 19 render purity (zero setState in useEffect)
+  const currentTheme = themeOverride ?? initialTheme;
 
   const audioCtxRef = useRef<AudioContext | null>(null);
   const masterGainRef = useRef<GainNode | null>(null);
   const windGainRef = useRef<GainNode | null>(null);
+  const windFilterRef = useRef<BiquadFilterNode | null>(null);
   const windSourceRef = useRef<AudioBufferSourceNode | null>(null);
   const chimeTimerRef = useRef<NodeJS.Timeout | null>(null);
   const isPlayingRef = useRef<boolean>(false);
   const volumeRef = useRef<number>(0.35);
+  const themeRef = useRef<'sakura' | 'rain' | 'dawn'>(currentTheme);
   const scheduleNextChimeRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     volumeRef.current = volume;
   }, [volume]);
+
+  // Synchronize audio graph filter cutoff whenever theme shifts
+  useEffect(() => {
+    themeRef.current = currentTheme;
+
+    const ctx = audioCtxRef.current;
+    const filter = windFilterRef.current;
+    if (ctx && filter && ctx.state !== 'closed') {
+      const now = ctx.currentTime;
+      const isRain = currentTheme === 'rain';
+      const isDawn = currentTheme === 'dawn';
+      const targetFreq = isRain ? 220 : isDawn ? 540 : 450;
+      filter.frequency.cancelScheduledValues(now);
+      filter.frequency.linearRampToValueAtTime(targetFreq, now + 1.2);
+    }
+  }, [currentTheme]);
+
+  const setTheme = useCallback((newTheme: 'sakura' | 'rain' | 'dawn') => {
+    setThemeOverride(newTheme);
+    themeRef.current = newTheme;
+
+    const ctx = audioCtxRef.current;
+    const filter = windFilterRef.current;
+    if (ctx && filter && ctx.state !== 'closed') {
+      const now = ctx.currentTime;
+      const isRain = newTheme === 'rain';
+      const isDawn = newTheme === 'dawn';
+      const targetFreq = isRain ? 220 : isDawn ? 540 : 450;
+      filter.frequency.cancelScheduledValues(now);
+      filter.frequency.linearRampToValueAtTime(targetFreq, now + 1.2);
+    }
+  }, []);
 
   // Initialize Audio Graph lazily upon explicit user gesture (browser autoplay compliance)
   const ensureAudioGraph = useCallback((): AudioContext => {
@@ -63,7 +105,7 @@ export function useWebAudio(): UseWebAudioReturn {
     masterGain.connect(ctx.destination);
     masterGainRef.current = masterGain;
 
-    // 2. Procedural Pink Noise Buffer for Gentle Night Wind
+    // 2. Procedural Pink Noise Buffer for Gentle Night Wind / Rain Wash
     const sampleRate = ctx.sampleRate;
     const duration = 3.0; // 3 seconds looped
     const bufferLength = Math.floor(sampleRate * duration);
@@ -99,26 +141,34 @@ export function useWebAudio(): UseWebAudioReturn {
     windSource.loop = true;
     windSourceRef.current = windSource;
 
-    // Biquad lowpass/bandpass filter centered in soothing breeze range (F13.2)
+    // Filter centered per theme: muffled rain/thunder lowpass (220Hz), dawn (540Hz), sakura (450Hz) (F13.2)
+    const isRain = themeRef.current === 'rain';
+    const isDawn = themeRef.current === 'dawn';
+    const baseFreq = isRain ? 220 : isDawn ? 540 : 450;
+    const baseQ = isRain ? 3.4 : isDawn ? 2.2 : 2.8;
+
     const windFilter = ctx.createBiquadFilter();
     windFilter.type = 'lowpass';
-    windFilter.frequency.setValueAtTime(450, ctx.currentTime);
-    windFilter.Q.setValueAtTime(2.8, ctx.currentTime);
+    windFilter.frequency.setValueAtTime(baseFreq, ctx.currentTime);
+    windFilter.Q.setValueAtTime(baseQ, ctx.currentTime);
+    windFilterRef.current = windFilter;
 
-    // LFO frequency modulation simulating natural breathing wind gusts (F13.3)
+    // LFO frequency modulation simulating natural breathing wind/rain gusts (F13.3)
     const lfo = ctx.createOscillator();
     lfo.type = 'sine';
-    lfo.frequency.setValueAtTime(0.12, ctx.currentTime);
+    lfo.frequency.setValueAtTime(isRain ? 0.08 : 0.12, ctx.currentTime);
 
     const lfoGain = ctx.createGain();
-    lfoGain.gain.setValueAtTime(140, ctx.currentTime); // mod range ~310Hz to ~590Hz
+    const modRange = isRain ? 80 : 140;
+    lfoGain.gain.setValueAtTime(modRange, ctx.currentTime);
     lfo.connect(lfoGain);
     lfoGain.connect(windFilter.frequency);
     lfo.start();
 
     // Wind channel gain
     const windGain = ctx.createGain();
-    windGain.gain.setValueAtTime(0.28, ctx.currentTime);
+    const channelVol = isRain ? 0.32 : 0.28;
+    windGain.gain.setValueAtTime(channelVol, ctx.currentTime);
     windGainRef.current = windGain;
 
     windSource.connect(windFilter);
@@ -153,6 +203,8 @@ export function useWebAudio(): UseWebAudioReturn {
     if (!ctx || !master || !isPlayingRef.current) return;
 
     const now = ctx.currentTime;
+    const isRain = themeRef.current === 'rain';
+    const isDawn = themeRef.current === 'dawn';
 
     // Primary pure sine oscillator + warm detuned triangle oscillator
     const oscA = ctx.createOscillator();
@@ -180,7 +232,8 @@ export function useWebAudio(): UseWebAudioReturn {
 
     const delayFilter = ctx.createBiquadFilter();
     delayFilter.type = 'lowpass';
-    delayFilter.frequency.setValueAtTime(1800, now);
+    const delayCutoff = isRain ? 850 : isDawn ? 2400 : 1800;
+    delayFilter.frequency.setValueAtTime(delayCutoff, now);
 
     // Wire delay loop
     delay.connect(delayFilter);
@@ -332,6 +385,8 @@ export function useWebAudio(): UseWebAudioReturn {
     pause,
     volume,
     setVolume,
+    theme: currentTheme,
+    setTheme,
   };
 }
 

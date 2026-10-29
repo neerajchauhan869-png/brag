@@ -84,14 +84,32 @@ export interface SceneLightingProps {
   sakuraRimIntensity?: number;
   sakuraRimColor?: string;
   sakuraRimPosition?: [number, number, number];
+  theme?: 'sakura' | 'rain' | 'dawn';
+}
+
+export interface RainParticlesProps {
+  count?: number; // default: 750
+  speed?: number; // default: 24.0
+  windX?: number; // default: -1.2
+  yMin?: number; // default: -22.0
+  yMax?: number; // default: 14.0
+}
+
+export interface DawnMotesProps {
+  count?: number; // default: 220
+  driftSpeed?: number; // default: 0.25
+  yMin?: number; // default: -2.0
+  yMax?: number; // default: 9.0
 }
 
 export interface RooftopCanvasProps {
   className?: string;
+  theme?: 'sakura' | 'rain' | 'dawn';
   children?: React.ReactNode;
 }
 
 export interface RooftopCanvasInnerProps {
+  theme?: 'sakura' | 'rain' | 'dawn';
   children?: React.ReactNode;
 }
 

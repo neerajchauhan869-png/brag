@@ -10,11 +10,12 @@ import { SealGate } from './SealGate';
 import { ReactionDock } from './ReactionDock';
 import { useWebAudio } from '@/hooks/useWebAudio';
 import { LOCAL_STORAGE_KEY } from '@/lib/supabase';
-import type { Story, ReactionType } from '@/types/story';
+import type { Story, ReactionType, StoryTheme } from '@/types/story';
 import type { StoryCardData } from '@/types/scene';
 
 export interface LetterExperienceProps {
   story: Story;
+  theme?: StoryTheme;
 }
 
 function subscribeStorage(callback: () => void) {
@@ -22,11 +23,12 @@ function subscribeStorage(callback: () => void) {
   return () => window.removeEventListener('storage', callback);
 }
 
-export function LetterExperience({ story: initialStory }: LetterExperienceProps) {
+export function LetterExperience({
+  story: initialStory,
+  theme: propTheme,
+}: LetterExperienceProps) {
   const [isSealBroken, setIsSealBroken] = useState(false);
   const [lanternsTrigger, setLanternsTrigger] = useState(0);
-
-  const { isPlaying, toggle, play } = useWebAudio();
 
   // Reactively sync with localStorage without cascading setState in effects
   const localStoriesRaw = useSyncExternalStore(
@@ -57,6 +59,9 @@ export function LetterExperience({ story: initialStory }: LetterExperienceProps)
     return initialStory;
   }, [initialStory, localStoriesRaw]);
 
+  const activeTheme: StoryTheme = propTheme || story.theme || 'sakura';
+  const { isPlaying, toggle, play } = useWebAudio(activeTheme);
+
   const handleBreakSeal = () => {
     setIsSealBroken(true);
     play().catch(() => {});
@@ -76,9 +81,9 @@ export function LetterExperience({ story: initialStory }: LetterExperienceProps)
 
   const formattedDate = story.date_moment || 'Tokyo Midnight • 24:00';
   const cardAccent =
-    story.theme === 'rain'
+    activeTheme === 'rain'
       ? 'twilight'
-      : story.theme === 'dawn'
+      : activeTheme === 'dawn'
       ? 'amber'
       : 'sakura';
 
@@ -120,15 +125,15 @@ export function LetterExperience({ story: initialStory }: LetterExperienceProps)
         <SealGate
           senderName={story.sender_name}
           recipientName={story.recipient_name}
-          theme={story.theme}
+          theme={activeTheme}
           onBreakSeal={handleBreakSeal}
         />
       )}
 
       {/* 3D Canvas Layer with Theme & Lanterns */}
-      <RooftopCanvas>
+      <RooftopCanvas theme={activeTheme}>
         <Scene1Hero
-          theme={story.theme}
+          theme={activeTheme}
           lanternsTrigger={lanternsTrigger}
         />
       </RooftopCanvas>
@@ -142,126 +147,109 @@ export function LetterExperience({ story: initialStory }: LetterExperienceProps)
           <span className="text-xl font-bold tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-pink-300 via-purple-200 to-indigo-200 drop-shadow-[0_0_12px_rgba(255,133,162,0.35)]">
             KOISTORY
           </span>
-          <span className="text-xs px-2 py-0.5 rounded-full border border-pink-400/30 text-pink-300/80 font-mono tracking-wider bg-pink-500/10">
-            手紙
+          <span className="text-xs px-2.5 py-0.5 rounded-full border border-pink-400/30 text-pink-300/80 font-mono tracking-wider bg-pink-500/10">
+            {activeTheme === 'rain'
+              ? '雨 • Tokyo Rain'
+              : activeTheme === 'dawn'
+              ? '黎明 • Golden Dawn'
+              : '桜 • Sakura Night'}
           </span>
         </Link>
 
         <div className="flex items-center space-x-4 pointer-events-auto">
-          <div className="hidden sm:block text-xs font-mono tracking-widest text-indigo-200/60 uppercase">
-            Letter for {story.recipient_name} • From {story.sender_name}
-          </div>
-          <AudioToggle isPlaying={isPlaying} onToggle={toggle} />
+          <AudioToggle
+            isPlaying={isPlaying}
+            onToggle={toggle}
+          />
         </div>
       </div>
 
-      {/* Hero Presentation */}
-      <section className="relative z-10 flex min-h-screen flex-col justify-between px-6 pt-28 pb-12 md:px-16 pointer-events-none select-none">
-        <div className="h-6" />
-
-        <div className="max-w-2xl my-auto">
-          <p className="text-xs md:text-sm font-mono tracking-[0.3em] uppercase text-pink-300/80 mb-3">
-            A Midnight Letter • 東京からの約束 • {formattedDate}
-          </p>
-          <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-white/95 leading-none mb-4 drop-shadow-[0_0_24px_rgba(255,133,162,0.35)]">
-            For
-            <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-300 via-rose-200 to-indigo-200">
-              {story.recipient_name}
+      {/* Hero Header Section */}
+      <section className="relative h-screen w-full flex flex-col items-center justify-center pointer-events-none px-6">
+        <div className="text-center space-y-4 max-w-2xl mx-auto pointer-events-auto">
+          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full border border-pink-400/25 bg-pink-500/10 backdrop-blur-md mb-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-pink-400 animate-pulse" />
+            <span className="text-[11px] font-mono tracking-widest text-pink-200 uppercase">
+              Rooftop Memory Sealed for {story.recipient_name}
             </span>
-          </h1>
-          <p className="text-sm md:text-base text-indigo-100/75 max-w-lg leading-relaxed font-light">
-            {story.sender_name} left a promise under the Tokyo moonlight for you: &ldquo;{story.promise_text}&rdquo;
-          </p>
-        </div>
-
-        {/* Scroll Cue */}
-        <div className="flex items-end justify-between">
-          <div className="text-xs font-mono tracking-widest text-indigo-300/50">
-            Theme: {story.theme.toUpperCase()} • {story.views_count} Reads
           </div>
-          <div className="flex flex-col items-center space-y-2">
-            <span className="text-[10px] font-mono tracking-[0.25em] text-pink-200/60 uppercase animate-pulse">
-              Scroll to Read
+
+          <h1 className="text-4xl sm:text-6xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-white via-pink-100 to-indigo-200 drop-shadow-[0_4px_30px_rgba(255,133,162,0.4)]">
+            {story.recipient_name}
+          </h1>
+
+          <p className="text-sm sm:text-base font-light text-indigo-100/80 max-w-lg mx-auto leading-relaxed">
+            Written by <span className="text-pink-300 font-medium">{story.sender_name}</span>. Scroll downward to break through the midnight clouds and read their rooftop vow.
+          </p>
+
+          <div className="pt-8 flex flex-col items-center justify-center space-y-2 opacity-75 animate-bounce">
+            <span className="text-[10px] font-mono tracking-widest text-pink-300 uppercase">
+              Scroll to Read Story
             </span>
-            <div className="w-4 h-7 rounded-full border border-indigo-400/30 flex items-start justify-center p-1">
-              <div className="w-1 h-2 bg-pink-400 rounded-full animate-bounce" />
+            <div className="w-4 h-7 rounded-full border border-pink-400/40 flex items-start justify-center p-1">
+              <div className="w-1 h-2 rounded-full bg-pink-400 animate-pulse" />
             </div>
           </div>
         </div>
       </section>
 
-      {/* Dynamic Narrative Cards Section */}
-      <section
-        aria-label="Story Cards Narrative"
-        className="relative z-10 w-full flex flex-col justify-between py-24 px-6 md:px-16 pointer-events-none"
-      >
-        <div className="w-full flex flex-col items-center justify-center mb-24 text-center select-none">
-          <span className="text-[11px] font-mono tracking-[0.3em] uppercase text-pink-300/80 mb-2">
-            Act II • The Secret Letter
-          </span>
-          <h2 className="text-3xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-pink-200 via-indigo-200 to-white drop-shadow-[0_0_20px_rgba(164,140,255,0.3)]">
-            Words Carried by the Wind
-          </h2>
-          <div className="w-16 h-0.5 bg-gradient-to-r from-transparent via-pink-400 to-transparent mt-4" />
-        </div>
-
-        {/* Staggered Story Cards */}
-        <div className="space-y-36 md:space-y-48 max-w-6xl mx-auto w-full">
-          <div className="flex justify-start md:pl-8">
-            <StoryCard card={storyCards[0]} index={0} />
+      {/* Narrative Journey Cards Scrolled Downward */}
+      <section className="relative z-10 max-w-4xl mx-auto px-6 py-32 space-y-48">
+        {storyCards.map((card, index) => (
+          <div
+            key={card.id}
+            className={`flex flex-col ${
+              index % 2 === 0 ? 'items-start sm:pl-8' : 'items-end sm:pr-8'
+            }`}
+          >
+            <StoryCard
+              card={card}
+              index={index}
+            />
           </div>
+        ))}
+      </section>
 
-          <div className="flex justify-end md:pr-8">
-            <StoryCard card={storyCards[1]} index={1} />
-          </div>
-
-          <div className="flex justify-center">
-            <StoryCard card={storyCards[2]} index={2} />
-          </div>
-        </div>
-
-        {/* Finale Action Box */}
-        <div className="mt-40 text-center max-w-xl mx-auto select-none">
-          <div className="p-8 rounded-2xl border border-white/10 bg-[#0f1225]/75 backdrop-blur-md pointer-events-auto shadow-[0_0_40px_rgba(255,133,162,0.15)] flex flex-col items-center space-y-4">
-            <span className="text-xs font-mono tracking-widest text-pink-300/80 uppercase block">
-              Inspired by this Rooftop?
-            </span>
-            <p className="text-sm text-indigo-100/90 font-light leading-relaxed">
-              Craft your own cinematic rooftop love letter to send across the night sky.
+      {/* Recipient Letter Footer & Action Card */}
+      <section className="relative z-10 max-w-2xl mx-auto px-6 py-28 text-center space-y-8">
+        <div className="p-8 sm:p-10 rounded-3xl border border-white/15 bg-[#0f1225]/80 backdrop-blur-xl space-y-6 shadow-[0_0_60px_rgba(0,0,0,0.6)]">
+          <div className="space-y-2">
+            <h2 className="text-2xl font-bold tracking-wider text-pink-200">
+              Carry This Vow With You
+            </h2>
+            <p className="text-xs font-mono text-indigo-300/70 uppercase tracking-widest">
+              永遠の約束 • Eternal Memory
             </p>
+          </div>
+
+          <p className="text-sm text-indigo-100/80 leading-relaxed font-light">
+            This letter will remain suspended in the Tokyo night sky. Whenever you return to this link, the lights and falling starlight will be waiting.
+          </p>
+
+          <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <button
+              onClick={scrollToTop}
+              className="w-full sm:w-auto px-6 py-3 rounded-full border border-pink-400/30 hover:border-pink-400/60 bg-white/5 hover:bg-white/10 text-pink-200 text-xs font-mono tracking-wider transition-all"
+            >
+              ↑ Revisit The Summit
+            </button>
             <Link
               href="/"
-              className="inline-flex items-center px-6 py-3 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-white font-mono text-xs tracking-wider shadow-lg hover:opacity-90 transition-opacity"
+              className="w-full sm:w-auto px-6 py-3 rounded-full bg-gradient-to-r from-pink-500 to-indigo-600 hover:from-pink-400 hover:to-indigo-500 text-white text-xs font-mono tracking-wider transition-all shadow-[0_0_20px_rgba(255,133,162,0.4)]"
             >
-              Craft Your Own Rooftop Story →
+              Craft Your Own Letter →
             </Link>
           </div>
         </div>
       </section>
 
-      {/* Floating Reaction Dock */}
+      {/* Floating Reaction Dock at Bottom */}
       <ReactionDock
         slug={story.slug}
-        initialLanterns={story.lantern_count}
-        initialBlossoms={story.blossom_count}
+        initialLanterns={story.lantern_count || 0}
+        initialBlossoms={story.blossom_count || 0}
         onSendReaction={handleSendReaction}
       />
-
-      {/* Footer */}
-      <footer className="relative z-10 w-full px-6 py-12 md:px-16 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-4 text-xs font-mono text-indigo-300/50 select-none">
-        <div className="flex items-center space-x-2">
-          <span className="w-2 h-2 rounded-full bg-pink-400 animate-pulse" />
-          <span>KOISTORY • Tokyo 24:00 Rooftop Letter Platform</span>
-        </div>
-        <button
-          type="button"
-          onClick={scrollToTop}
-          className="text-pink-300/80 hover:text-pink-200 transition-colors uppercase tracking-widest pointer-events-auto cursor-pointer"
-        >
-          Return to Rooftop ↑
-        </button>
-      </footer>
     </main>
   );
 }

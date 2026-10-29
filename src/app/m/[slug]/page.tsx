@@ -5,6 +5,7 @@ import type { Metadata } from 'next';
 
 export interface PageProps {
   params: Promise<{ slug: string }>;
+  searchParams?: Promise<{ theme?: string }>;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -24,8 +25,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-async function StoryContent({ params }: PageProps) {
+async function StoryContent({ params, searchParams }: PageProps) {
   const { slug } = await params;
+  const search = searchParams ? await searchParams : undefined;
   const story = await storyDb.getStoryBySlug(slug);
 
   if (story) {
@@ -33,10 +35,18 @@ async function StoryContent({ params }: PageProps) {
     story.views_count = (story.views_count || 0) + 1;
   }
 
-  return <StoryPageWrapper slug={slug} initialStory={story} />;
+  const queryTheme = search?.theme as 'sakura' | 'rain' | 'dawn' | undefined;
+
+  return (
+    <StoryPageWrapper
+      slug={slug}
+      initialStory={story}
+      queryTheme={queryTheme}
+    />
+  );
 }
 
-export default function StorySlugPage({ params }: PageProps) {
+export default function StorySlugPage({ params, searchParams }: PageProps) {
   return (
     <Suspense
       fallback={
@@ -48,7 +58,7 @@ export default function StorySlugPage({ params }: PageProps) {
         </div>
       }
     >
-      <StoryContent params={params} />
+      <StoryContent params={params} searchParams={searchParams} />
     </Suspense>
   );
 }
