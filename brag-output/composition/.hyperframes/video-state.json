@@ -1,0 +1,121 @@
+{
+  "version": 1,
+  "historyId": "c6d1d5f1-85e0-47b6-b258-0f3103674461",
+  "currentRevision": "c4ffc38b-7159-4175-8b7f-85f27e76aa61",
+  "pendingChanges": false,
+  "files": {
+    "hyperframes.json": {
+      "hash": "3b56c245864b11485471e42b75727bdbcf791477baa28fb2377715cd470dabb6",
+      "content": "C:\\Users\\neera\\.cache\\hyperframes\\history\\c6d1d5f1-85e0-47b6-b258-0f3103674461\\blobs\\3b\\3b56c245864b11485471e42b75727bdbcf791477baa28fb2377715cd470dabb6"
+    },
+    "index.html": {
+      "hash": "1cddeb3bf016c3d42ffd87ebfe7f61feaadba112eb39b92d570aec2d8abe1fe3",
+      "content": "C:\\Users\\neera\\.cache\\hyperframes\\history\\c6d1d5f1-85e0-47b6-b258-0f3103674461\\blobs\\1c\\1cddeb3bf016c3d42ffd87ebfe7f61feaadba112eb39b92d570aec2d8abe1fe3"
+    },
+    "assets/music/bgm.mp3": {
+      "hash": "f9912f2c962ada1e579f5ccc5a7d854d67e5e81ee96a7dd8c885a8480ae58d09",
+      "content": "C:\\Users\\neera\\.cache\\hyperframes\\history\\c6d1d5f1-85e0-47b6-b258-0f3103674461\\blobs\\f9\\f9912f2c962ada1e579f5ccc5a7d854d67e5e81ee96a7dd8c885a8480ae58d09"
+    }
+  },
+  "revisions": {
+    "c4ffc38b-7159-4175-8b7f-85f27e76aa61": {
+      "actor": {
+        "kind": "outside",
+        "name": "Outside"
+      },
+      "label": "Changed outside the app",
+      "startedAt": 1793301504199,
+      "endedAt": 1793301504207,
+      "files": {
+        "index.html": {
+          "before": "C:\\Users\\neera\\.cache\\hyperframes\\history\\c6d1d5f1-85e0-47b6-b258-0f3103674461\\blobs\\6a\\6aaff242d2266a0f7ea51ee82ca767ed57e7d044e5149bae4057b08057e491cd",
+          "after": "C:\\Users\\neera\\.cache\\hyperframes\\history\\c6d1d5f1-85e0-47b6-b258-0f3103674461\\blobs\\1c\\1cddeb3bf016c3d42ffd87ebfe7f61feaadba112eb39b92d570aec2d8abe1fe3"
+        }
+      }
+    }
+  },
+  "checks": {
+    "latest": {
+      "revision": "c4ffc38b-7159-4175-8b7f-85f27e76aa61",
+      "id": "a9739353-f0dc-48cc-a618-bfa9736aef74"
+    },
+    "revisions": {
+      "c4ffc38b-7159-4175-8b7f-85f27e76aa61": [
+        {
+          "id": "a9739353-f0dc-48cc-a618-bfa9736aef74",
+          "scope": "project",
+          "report": "C:\\Users\\neera\\koistory\\brag-output\\composition\\.hyperframes\\artifacts\\checks\\a9739353-f0dc-48cc-a618-bfa9736aef74.json",
+          "metadata": {
+            "ok": true,
+            "browserSkipped": false,
+            "options": {
+              "samples": 9,
+              "atTransitions": false,
+              "maxIssues": 80,
+              "collapseStatic": true,
+              "tolerance": 2,
+              "timeout": 10000,
+              "contrast": true,
+              "strict": false,
+              "snapshots": false,
+              "browserGpuMode": "auto"
+            }
+          },
+          "createdAt": 1793301514879,
+          "contentHash": "f411663f2704438dc0a9fe062e8bc0b16f933fd466c023de9268435795c1129c",
+          "revision": "c4ffc38b-7159-4175-8b7f-85f27e76aa61",
+          "inputFingerprint": "110f532466b0c69f2b595a0d0fe2176a369a4bcd2ca996170814eced29d485c4",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        }
+      ]
+    },
+    "unversioned": [
+      {
+        "id": "52a10215-d496-41bd-a4a4-4464b07f1cd3",
+        "scope": "project",
+        "report": "C:\\Users\\neera\\koistory\\brag-output\\composition\\.hyperframes\\artifacts\\checks\\52a10215-d496-41bd-a4a4-4464b07f1cd3.json",
+        "metadata": {
+          "ok": true,
+          "browserSkipped": false,
+          "options": {
+            "samples": 9,
+            "atTransitions": false,
+            "maxIssues": 80,
+            "collapseStatic": true,
+            "tolerance": 2,
+            "timeout": 10000,
+            "contrast": true,
+            "strict": false,
+            "snapshots": false,
+            "browserGpuMode": "auto"
+          }
+        },
+        "createdAt": 1793301452621,
+        "contentHash": "09b5cb99722e71eb2f532c958bf0299e968736a104a03e2e62d088d223cd1d77",
+        "revision": null,
+        "inputFingerprint": "74d7cb3fb5980ee542ab3d140cb35ef5646f9f0aa67da985ae60abceb8b34671",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      }
+    ]
+  },
+  "snapshots": {
+    "latest": null,
+    "revisions": {},
+    "unversioned": []
+  },
+  "renders": {
+    "latest": {
+      "id": "5ed10d59-b4eb-4da0-96de-c8574da18843",
+      "completedAt": 1793301587349,
+      "output": "C:\\Users\\neera\\koistory\\brag-output\\brag.mp4",
+      "status": "completed",
+      "revision": "c4ffc38b-7159-4175-8b7f-85f27e76aa61"
+    },
+    "retainedRevisions": [
+      "c4ffc38b-7159-4175-8b7f-85f27e76aa61"
+    ]
+  },
+  "pendingArtifactCleanup": []
+}

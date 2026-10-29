@@ -1,0 +1,1 @@
+Built Koistory: A cinematic 3D anime love letter platform under the Tokyo midnight moon. 100% procedural Three.js & Web Audio — zero external 3D models or audio files. Recipients break an interactive wax seal to reveal vows suspended over the Tokyo skyline: https://koistory.vercel.app

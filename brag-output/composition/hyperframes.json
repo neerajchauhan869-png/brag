@@ -1,0 +1,9 @@
+{
+  "$schema": "https://hyperframes.dev/schema/hyperframes.json",
+  "name": "koistory-brag",
+  "version": "1.0.0",
+  "entry": "index.html",
+  "width": 1920,
+  "height": 1080,
+  "fps": 30
+}

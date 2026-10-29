@@ -1,0 +1,430 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>Koistory — 3D Tokyo Rooftop Love Letter</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: 0;
+        background: #040614;
+        color: #ffffff;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        overflow: hidden;
+      }
+      #root {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: radial-gradient(circle at 50% 30%, #151a3a 0%, #080b1c 60%, #03040b 100%);
+      }
+      .clip {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+      }
+      
+      /* Shared Ambient Stars & Celestial Moon */
+      .celestial-layer {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+      }
+      .moon-glow {
+        position: absolute;
+        top: 80px;
+        right: 180px;
+        width: 220px;
+        height: 220px;
+        border-radius: 50%;
+        background: radial-gradient(circle, #fff9e6 0%, #ffd199 45%, rgba(255, 180, 120, 0.25) 70%, transparent 100%);
+        box-shadow: 0 0 100px rgba(255, 200, 140, 0.45);
+      }
+      .stars-canvas {
+        position: absolute;
+        inset: 0;
+        background-image: 
+          radial-gradient(1.5px 1.5px at 120px 240px, #ffffff, transparent),
+          radial-gradient(2px 2px at 450px 120px, #ffe4e6, transparent),
+          radial-gradient(1.5px 1.5px at 800px 300px, #c7d2fe, transparent),
+          radial-gradient(2px 2px at 1100px 160px, #ffffff, transparent),
+          radial-gradient(1.5px 1.5px at 1450px 280px, #fed7aa, transparent),
+          radial-gradient(2px 2px at 1700px 110px, #ffffff, transparent),
+          radial-gradient(1.5px 1.5px at 300px 600px, #ffe4e6, transparent),
+          radial-gradient(2px 2px at 1580px 580px, #c7d2fe, transparent);
+        opacity: 0.85;
+      }
+
+      /* Tokyo Skyline Silhouette Base */
+      .skyline-base {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 380px;
+        background: linear-gradient(180deg, transparent 0%, rgba(8, 12, 28, 0.85) 60%, #03040a 100%);
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-around;
+        padding: 0 40px;
+      }
+      .skyline-building {
+        width: 140px;
+        height: 300px;
+        background: #0a0e22;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-bottom: none;
+        box-shadow: inset 0 0 20px rgba(56, 189, 248, 0.05);
+        position: relative;
+      }
+      .beacon {
+        position: absolute;
+        top: -4px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #ef4444;
+        box-shadow: 0 0 12px #ef4444;
+      }
+
+      /* Glassmorphic Container Standards */
+      .glass-card {
+        background: rgba(15, 20, 42, 0.85);
+        backdrop-filter: blur(24px);
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 32px;
+        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.65), 0 0 40px rgba(255, 133, 162, 0.15);
+      }
+
+      /* Kanji Stamp Badge */
+      .kanji-seal {
+        width: 110px;
+        height: 110px;
+        border-radius: 50%;
+        border: 3px solid rgba(255, 133, 162, 0.8);
+        background: radial-gradient(circle, #5b152d 0%, #290814 100%);
+        box-shadow: 0 0 30px rgba(255, 133, 162, 0.6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 52px;
+        font-weight: 900;
+        color: #fed7aa;
+        margin: 0 auto 24px;
+      }
+
+      /* Typography */
+      .hero-title {
+        font-size: 96px;
+        font-weight: 900;
+        letter-spacing: 0.08em;
+        margin: 0;
+        background: linear-gradient(135deg, #ffffff 0%, #ffccd5 50%, #c4b5fd 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 0 0 50px rgba(255, 133, 162, 0.4);
+      }
+      .badge-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 28px;
+        border-radius: 9999px;
+        border: 1.5px solid rgba(255, 133, 162, 0.45);
+        background: rgba(255, 133, 162, 0.14);
+        color: #fed7aa;
+        font-family: monospace;
+        font-size: 28px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        margin-bottom: 24px;
+      }
+      .pill-theme {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 32px;
+        border-radius: 24px;
+        font-weight: 700;
+        font-size: 28px;
+      }
+      .quote-text {
+        font-size: 42px;
+        font-weight: 600;
+        line-height: 1.45;
+        color: #ffffff;
+        font-style: italic;
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-width="1920"
+      data-height="1080"
+      data-duration="18"
+    >
+      <!-- Background Audio -->
+      <audio
+        id="bgm"
+        src="assets/music/bgm.mp3"
+        data-start="0"
+        data-duration="18"
+        data-volume="0.35"
+      ></audio>
+
+      <!-- Persistent Celestial Sky & Distant Tokyo Horizon -->
+      <div class="celestial-layer">
+        <div class="stars-canvas"></div>
+        <div class="moon-glow" id="celestial-moon"></div>
+        <div class="skyline-base">
+          <div class="skyline-building" style="height: 240px; width: 120px;"><div class="beacon"></div></div>
+          <div class="skyline-building" style="height: 340px; width: 160px;"><div class="beacon"></div></div>
+          <div class="skyline-building" style="height: 280px; width: 140px;"><div class="beacon"></div></div>
+          <div class="skyline-building" style="height: 380px; width: 190px;"><div class="beacon"></div></div>
+          <div class="skyline-building" style="height: 260px; width: 130px;"><div class="beacon"></div></div>
+          <div class="skyline-building" style="height: 320px; width: 150px;"><div class="beacon"></div></div>
+        </div>
+      </div>
+
+      <!-- ============================================================ -->
+      <!-- SCENE 1: The Midnight Hook (0.0s – 3.8s)                      -->
+      <!-- ============================================================ -->
+      <section id="scene-1" class="clip" data-start="0" data-duration="3.8">
+        <div id="s1-content" style="text-align: center; max-width: 1200px;">
+          <div class="badge-tag">
+            <span style="display:inline-block; width:12px; height:12px; border-radius:50%; background:#ff85a2;"></span>
+            <span>恋の物語 • TOKYO ROOFTOP 24:00</span>
+          </div>
+          <h1 class="hero-title" id="s1-title">KOISTORY</h1>
+          <p id="s1-sub" style="font-size: 36px; color: #fed7aa; margin-top: 24px; font-weight: 300; letter-spacing: 0.04em;">
+            A Cinematic 3D Anime Love Letter Platform
+          </p>
+          <div id="s1-note" style="margin-top: 36px; font-family: monospace; color: #a5b4fc; font-size: 28px; letter-spacing: 0.12em;">
+            PROMISES SUSPENDED BENEATH THE TOKYO MOON
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- SCENE 2: Break the Wax Seal (3.8s – 8.2s)                     -->
+      <!-- ============================================================ -->
+      <section id="scene-2" class="clip" data-start="3.8" data-duration="4.4">
+        <div id="s2-envelope" class="glass-card" style="width: 900px; padding: 64px; text-align: center;">
+          <div class="kanji-seal" id="s2-seal">絆</div>
+          <div class="badge-tag" style="border-color: rgba(254, 215, 170, 0.4); color: #fed7aa;">
+            SECRET ROOFTOP MEMOIR
+          </div>
+          <h2 id="s2-headline" style="font-size: 54px; font-weight: 800; margin: 16px 0 20px; color: #ffffff;">
+            Break the Seal to Read
+          </h2>
+          <p id="s2-desc" style="font-size: 28px; color: #cbd5e1; font-weight: 300; line-height: 1.6; max-width: 740px; margin: 0 auto;">
+            Dedicated to <span style="color: #ff85a2; font-weight: 600;">Aoi</span> by <span style="color: #93c5fd; font-weight: 600;">Kaito</span>. Sealed into starlight.
+          </p>
+          <div id="s2-break-burst" style="margin-top: 36px;">
+            <span style="display: inline-block; padding: 14px 44px; border-radius: 9999px; background: linear-gradient(90deg, #ec4899, #8b5cf6); color: white; font-weight: 700; font-size: 28px; letter-spacing: 0.08em; box-shadow: 0 0 35px rgba(236, 72, 153, 0.6);">
+              SEAL UNLOCKED ✦
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- SCENE 3: Dynamic Weather Themes (8.2s – 13.2s)               -->
+      <!-- ============================================================ -->
+      <section id="scene-3" class="clip" data-start="8.2" data-duration="5.0">
+        <div id="s3-content" style="width: 1360px; display: flex; flex-direction: column; align-items: center; gap: 36px;">
+          <!-- Active Theme Switcher Tabs -->
+          <div style="display: flex; gap: 24px;">
+            <div id="tab-sakura" class="pill-theme" style="background: rgba(244, 114, 182, 0.3); border: 2px solid #f472b6; color: #fdf2f8;">
+              🌸 Sakura Night
+            </div>
+            <div id="tab-rain" class="pill-theme" style="background: rgba(56, 189, 248, 0.25); border: 2px solid #38bdf8; color: #e0f2fe;">
+              🌧️ Tokyo Rain
+            </div>
+            <div id="tab-dawn" class="pill-theme" style="background: rgba(251, 146, 60, 0.25); border: 2px solid #fb923c; color: #ffedd5;">
+              🌅 Golden Dawn
+            </div>
+          </div>
+
+          <!-- Glassmorphic Letter Card with Custom Vow -->
+          <div id="s3-card" class="glass-card" style="width: 100%; padding: 56px 64px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+              <span style="font-family: monospace; font-size: 28px; color: #f472b6; letter-spacing: 0.15em;">
+                ACT 2: 約束 • THE PROMISE
+              </span>
+              <span style="font-family: monospace; font-size: 28px; color: #fed7aa;">
+                00:01:12
+              </span>
+            </div>
+            <p class="quote-text" id="s3-quote">
+              “Even if the seasons change, I will wait on this rooftop beneath the Tokyo starlight.”
+            </p>
+            <div style="margin-top: 32px; font-size: 28px; color: #94a3b8; font-weight: 300;">
+              Procedural wind gusts • Ambient pentatonic chimes • Dynamic skyline glow
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- SCENE 4: The Rooftop Plunge & Vow (13.2s – 18.0s)             -->
+      <!-- ============================================================ -->
+      <section id="scene-4" class="clip" data-start="13.2" data-duration="4.8">
+        <div id="s4-content" style="text-align: center; max-width: 1300px;">
+          <!-- Floating Lantern Icon -->
+          <div id="s4-lantern" style="font-size: 72px; margin-bottom: 16px; filter: drop-shadow(0 0 24px #fbbf24);">
+            🏮 🌸 🏮
+          </div>
+
+          <h2 id="s4-headline" style="font-size: 72px; font-weight: 900; margin: 0 0 20px; color: #ffffff; letter-spacing: 0.04em;">
+            Zero 3D Models. Zero Audio Files.
+          </h2>
+
+          <p id="s4-sub" style="font-size: 36px; color: #fed7aa; margin: 0 0 40px; font-weight: 300;">
+            100% Procedurally Synthesized in Client WebGL &amp; Web Audio
+          </p>
+
+          <div id="s4-cta" style="display: inline-flex; align-items: center; gap: 16px; padding: 20px 52px; border-radius: 9999px; background: linear-gradient(135deg, #ec4899 0%, #6366f1 100%); box-shadow: 0 0 50px rgba(236, 72, 153, 0.6);">
+            <span style="font-size: 32px; font-weight: 800; letter-spacing: 0.08em; color: #ffffff;">
+              koistory.vercel.app
+            </span>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- GSAP Master Animation Timeline -->
+    <script>
+      const tl = gsap.timeline({ paused: true });
+
+      // -------------------------------------------------------------
+      // Scene 1: The Midnight Hook (0.0s - 3.8s)
+      // -------------------------------------------------------------
+      tl.fromTo(
+        "#s1-title",
+        { y: 60, opacity: 0 },
+        { y: 0, opacity: 1, duration: 1.2, ease: "power3.out" },
+        0.3
+      );
+      tl.fromTo(
+        "#s1-sub",
+        { y: 30, opacity: 0 },
+        { y: 0, opacity: 1, duration: 1.0, ease: "power3.out" },
+        0.8
+      );
+      tl.fromTo(
+        "#s1-note",
+        { opacity: 0 },
+        { opacity: 1, duration: 0.8, ease: "power2.out" },
+        1.4
+      );
+      tl.to(
+        "#s1-content",
+        { y: -40, opacity: 0, duration: 0.5, ease: "power2.in" },
+        3.3
+      );
+
+      // -------------------------------------------------------------
+      // Scene 2: Break the Wax Seal (3.8s - 8.2s)
+      // -------------------------------------------------------------
+      tl.fromTo(
+        "#s2-envelope",
+        { scale: 0.88, opacity: 0, y: 50 },
+        { scale: 1.0, opacity: 1, y: 0, duration: 1.0, ease: "back.out(1.2)" },
+        3.9
+      );
+      tl.fromTo(
+        "#s2-seal",
+        { scale: 1.0 },
+        { scale: 1.25, duration: 0.4, yoyo: true, repeat: 1, ease: "power2.out" },
+        5.0
+      );
+      tl.fromTo(
+        "#s2-break-burst",
+        { scale: 0.8, opacity: 0 },
+        { scale: 1.0, opacity: 1, duration: 0.6, ease: "elastic.out(1, 0.5)" },
+        5.6
+      );
+      tl.to(
+        "#s2-envelope",
+        { scale: 1.08, opacity: 0, duration: 0.4, ease: "power2.in" },
+        7.8
+      );
+
+      // -------------------------------------------------------------
+      // Scene 3: Dynamic Weather Themes (8.2s - 13.2s)
+      // -------------------------------------------------------------
+      tl.fromTo(
+        "#s3-content",
+        { y: 50, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.9, ease: "power3.out" },
+        8.3
+      );
+      // Theme highlights
+      tl.fromTo(
+        "#tab-rain",
+        { scale: 1.0 },
+        { scale: 1.1, duration: 0.5, ease: "power1.out" },
+        9.8
+      );
+      tl.fromTo(
+        "#tab-dawn",
+        { scale: 1.0 },
+        { scale: 1.1, duration: 0.5, ease: "power1.out" },
+        11.2
+      );
+      tl.to(
+        "#s3-content",
+        { y: -50, opacity: 0, duration: 0.5, ease: "power2.in" },
+        12.7
+      );
+
+      // -------------------------------------------------------------
+      // Scene 4: The Rooftop Plunge & Vow (13.2s - 18.0s)
+      // -------------------------------------------------------------
+      tl.fromTo(
+        "#s4-lantern",
+        { y: 60, opacity: 0 },
+        { y: 0, opacity: 1, duration: 1.0, ease: "power2.out" },
+        13.4
+      );
+      tl.fromTo(
+        "#s4-headline",
+        { y: 40, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.9, ease: "power3.out" },
+        13.8
+      );
+      tl.fromTo(
+        "#s4-sub",
+        { y: 30, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.8, ease: "power3.out" },
+        14.4
+      );
+      tl.fromTo(
+        "#s4-cta",
+        { scale: 0.8, opacity: 0 },
+        { scale: 1.0, opacity: 1, duration: 0.9, ease: "elastic.out(1, 0.6)" },
+        15.0
+      );
+
+      // Register master timeline
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>
